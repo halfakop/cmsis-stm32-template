@@ -37,7 +37,7 @@ DEFINES += VECT_TAB_FLASH
 # Инструменты
 #-------------------------------------------------------------------------------
 TOOLCHAIN=~/devel/arm/toolchain/current/bin
-AS = $(TOOLCHAIN)/arm-none-eabi-as
+AS = $(TOOLCHAIN)/arm-none-eabi-gcc
 CC = $(TOOLCHAIN)/arm-none-eabi-gcc
 LD = $(TOOLCHAIN)/arm-none-eabi-gcc
 CP = $(TOOLCHAIN)/arm-none-eabi-objcopy
@@ -99,7 +99,7 @@ LDFLAGS += $(LIBS)
 
 # Настройки ассемблера
 #-------------------------------------------------------------------------------
-AFLAGS += -ahls -mapcs-32
+# AFLAGS += -ahls -mapcs-32
 
 # Список объектных файлов
 #-------------------------------------------------------------------------------
