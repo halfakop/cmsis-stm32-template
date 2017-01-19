@@ -28,9 +28,8 @@ PERIPHDRIVERS += stm32f10x_rcc
 
 # Дефайны
 #-------------------------------------------------------------------------------
-DEFINES += USE_STDPERIPH_DRIVER
-DEFINES += STM32F10X_MD_VL
-
+DEFINES += USE_STDPERIPH_DRIVER  # использование SPL
+DEFINES += STM32F10X_MD_VL       # SystemCoreClock = SYSCLK_FREQ_24MHz
 DEFINES += GCC_ARMCM3
 DEFINES += VECT_TAB_FLASH
 
@@ -42,6 +41,7 @@ CC = $(TOOLCHAIN)/arm-none-eabi-gcc
 LD = $(TOOLCHAIN)/arm-none-eabi-gcc
 CP = $(TOOLCHAIN)/arm-none-eabi-objcopy
 SZ = $(TOOLCHAIN)/arm-none-eabi-size
+OD = $(TOOLCHAIN)/arm-none-eabi-objdump
 RM = rm
 
 # Пути к CMSIS, StdPeriph Lib
@@ -50,7 +50,7 @@ CMSIS_PATH         = cmsis
 STDPERIPH_INC_PATH = stdperiph/inc
 STDPERIPH_SRC_PATH = stdperiph/src
 
-# startup файл
+# Путь к файлу инициализации
 #-------------------------------------------------------------------------------
 STARTUP = startup/stm32f10x_md_vl.s
 
@@ -60,7 +60,7 @@ SOURCEDIRS := src
 SOURCEDIRS += $(CMSIS_PATH)
 SOURCEDIRS += $(STDPERIPH_SRC_PATH)
 
-# Пути поиска хидеров
+# Пути поиска заголовочных файлов
 #-------------------------------------------------------------------------------
 INCLUDES += .
 INCLUDES += $(SOURCEDIRS)
@@ -76,9 +76,9 @@ LIBS    +=
 #-------------------------------------------------------------------------------
 CFLAGS += -mthumb -mcpu=cortex-m3 # архитектура и система комманд
 CFLAGS += -std=gnu99              # стандарт языка С
-CFLAGS += -Wall -pedantic         # Выводить все предупреждения
-CFLAGS += -Os                     # Оптимизация
-CFLAGS += -ggdb                   # Генерировать отладочную информацию для gdb
+CFLAGS += -Wall -pedantic         # выводить все предупреждения
+CFLAGS += -Os                     # оптимизация
+CFLAGS += -ggdb                   # генерировать отладочную информацию для gdb
 CFLAGS += -fno-builtin
 
 CFLAGS += $(addprefix -I, $(INCLUDES))
@@ -91,7 +91,7 @@ LDSCRIPT   = stm32f100rb.ld
 
 # Настройки линкера
 #-------------------------------------------------------------------------------
-LDFLAGS += -nostartfiles
+LDFLAGS += -nostartfiles -nostdlib -mthumb
 LDFLAGS += -L$(LDSCR_PATH)
 LDFLAGS += -T$(LDSCR_PATH)/$(LDSCRIPT)
 LDFLAGS += $(addprefix -L, $(LIBPATH))
@@ -121,7 +121,7 @@ TOREMOVE += $(STDPERIPH_SRC_PATH)/*.o
 TOREMOVE += $(patsubst %.s, %.o, $(STARTUP))
 TOREMOVE += $(TARGET)
 
-# Собрать все
+# Собрать всё
 #-------------------------------------------------------------------------------
 all: $(TARGET).hex size
 
@@ -135,6 +135,10 @@ clean:
 $(TARGET).hex: $(TARGET).elf
 	@echo "Create HEX =>" $(CP) -Oihex $(TARGET).elf $(TARGET).hex
 	@$(CP) -Oihex $(TARGET).elf $(TARGET).hex
+
+$(TARGET).lst: $(TARGET).elf
+	@echo "Create LST =>" $(OD) -h -S $(TARGET).elf > $(TARGET).lst
+	@$(OD) -h -S $< > $@
 
 # Показываем размер
 #-------------------------------------------------------------------------------
